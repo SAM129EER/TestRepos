@@ -17,10 +17,19 @@ export async function POST(req: Request) {
     await connectToDatabase()
 
     const isEmail = identifier.includes("@")
-    const user = await User.findOne(isEmail ? { email: identifier.toLowerCase() } : { username: identifier })
+    const user = await User.findOne(
+      isEmail ? { email: identifier.toLowerCase() } : { username: identifier }
+    )
 
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials." }, { status: 401 })
+    }
+
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { error: "Please verify your email before logging in." },
+        { status: 403 }
+      )
     }
 
     const ok = await bcrypt.compare(password, user.passwordHash)

@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { signupSchema } from "@/lib/validation"
-import { z } from "zod"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signupSchema } from "@/lib/validation";
+import { z } from "zod";
 
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -15,46 +15,44 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/components/ui/card"
-import Link from "next/link"
+} from "@/components/ui/card";
+import Link from "next/link";
 
-import {
-  Field,
-  FieldLabel,
-  FieldError
-} from "@/components/ui/field"
-import { useRouter } from "next/navigation"
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { useRouter } from "next/navigation";
 
-type SignupForm = z.infer<typeof signupSchema>
+type SignupForm = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const router = useRouter()
-  const [rootError, setRootError] = useState<string | null>(null)
+  const router = useRouter();
+  const [rootError, setRootError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<SignupForm>({
-    resolver: zodResolver(signupSchema)
-  })
+    resolver: zodResolver(signupSchema),
+  });
 
   const onSubmit = async (data: SignupForm) => {
-    setRootError(null)
+    setRootError(null);
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    })
+    });
 
     if (!res.ok) {
-      const err = (await res.json().catch(() => null)) as { error?: string } | null
-      setRootError(err?.error ?? "Signup failed")
-      return
+      const err = (await res.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      setRootError(err?.error ?? "Signup failed");
+      return;
     }
 
-    router.push("/auth/success?from=signup")
-  }
+    router.push("/auth/check-email?from=signup");
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-linear-to-b from-background to-muted px-4">
@@ -67,10 +65,7 @@ export default function SignupPage() {
         </CardHeader>
 
         <CardContent>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {rootError && <FieldError>{rootError}</FieldError>}
 
             {/* Full Name */}
@@ -86,9 +81,7 @@ export default function SignupPage() {
               />
 
               {errors.fullName && (
-                <FieldError>
-                  {errors.fullName.message}
-                </FieldError>
+                <FieldError>{errors.fullName.message}</FieldError>
               )}
             </Field>
 
@@ -105,9 +98,7 @@ export default function SignupPage() {
               />
 
               {errors.username && (
-                <FieldError>
-                  {errors.username.message}
-                </FieldError>
+                <FieldError>{errors.username.message}</FieldError>
               )}
             </Field>
 
@@ -124,11 +115,7 @@ export default function SignupPage() {
                 aria-invalid={!!errors.email}
               />
 
-              {errors.email && (
-                <FieldError>
-                  {errors.email.message}
-                </FieldError>
-              )}
+              {errors.email && <FieldError>{errors.email.message}</FieldError>}
             </Field>
 
             {/* Password */}
@@ -145,17 +132,11 @@ export default function SignupPage() {
               />
 
               {errors.password && (
-                <FieldError>
-                  {errors.password.message}
-                </FieldError>
+                <FieldError>{errors.password.message}</FieldError>
               )}
             </Field>
 
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Creating account..." : "Sign Up"}
             </Button>
           </form>
@@ -172,5 +153,5 @@ export default function SignupPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

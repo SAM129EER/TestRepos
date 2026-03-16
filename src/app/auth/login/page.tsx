@@ -30,6 +30,7 @@ type LoginForm = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
   const [rootError, setRootError] = useState<string | null>(null)
+  const [showResendVerify, setShowResendVerify] = useState(false)
 
   const {
     register,
@@ -41,6 +42,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setRootError(null)
+    setShowResendVerify(false)
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,7 +51,11 @@ export default function LoginPage() {
 
     if (!res.ok) {
       const err = (await res.json().catch(() => null)) as { error?: string } | null
-      setRootError(err?.error ?? "Login failed")
+      const msg = err?.error ?? "Login failed"
+      setRootError(msg)
+      if (msg.toLowerCase().includes("verify your email")) {
+        setShowResendVerify(true)
+      }
       return
     }
 
@@ -72,6 +78,16 @@ export default function LoginPage() {
             className="space-y-5"
           >
             {rootError && <FieldError>{rootError}</FieldError>}
+            {showResendVerify && (
+              <div className="text-sm text-muted-foreground">
+                <Link
+                  href="/auth/resend-verification"
+                  className="text-primary hover:underline"
+                >
+                  Resend verification email
+                </Link>
+              </div>
+            )}
 
             {/* Identifier */}
 
@@ -111,6 +127,15 @@ export default function LoginPage() {
                 </FieldError>
               )}
             </Field>
+
+            <div className="flex justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             <Button
               className="w-full"
